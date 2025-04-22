@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useCallback } from "react";
 import { prompts } from "../data/prompts";
 
 const Spinner: React.FC = () => {
@@ -11,42 +11,45 @@ const Spinner: React.FC = () => {
   const numSlices = prompts.length;
   const anglePerSlice = (2 * Math.PI) / numSlices;
 
-  const drawWheel = (angleOffset: number) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
+  const drawWheel = useCallback(
+    (angleOffset: number) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
 
-    canvas.width = wheelSize;
-    canvas.height = wheelSize;
-    const radius = wheelSize / 2;
+      canvas.width = wheelSize;
+      canvas.height = wheelSize;
+      const radius = wheelSize / 2;
 
-    ctx.clearRect(0, 0, wheelSize, wheelSize);
+      ctx.clearRect(0, 0, wheelSize, wheelSize);
 
-    for (let i = 0; i < numSlices; i++) {
-      const angle = i * anglePerSlice + angleOffset;
+      for (let i = 0; i < numSlices; i++) {
+        const angle = i * anglePerSlice + angleOffset;
 
-      ctx.fillStyle = `hsl(${(i * 360) / numSlices}, 80%, 70%)`;
-      ctx.beginPath();
-      ctx.moveTo(radius, radius);
-      ctx.arc(radius, radius, radius, angle, angle + anglePerSlice);
-      ctx.lineTo(radius, radius);
-      ctx.fill();
+        ctx.fillStyle = `hsl(${(i * 360) / numSlices}, 80%, 70%)`;
+        ctx.beginPath();
+        ctx.moveTo(radius, radius);
+        ctx.arc(radius, radius, radius, angle, angle + anglePerSlice);
+        ctx.lineTo(radius, radius);
+        ctx.fill();
 
-      ctx.save();
-      ctx.translate(radius, radius);
-      ctx.rotate(angle + anglePerSlice / 2);
-      ctx.textAlign = "right";
-      ctx.fillStyle = "#333";
-      ctx.font = "14px sans-serif";
-      ctx.fillText(prompts[i], radius - 10, 5);
-      ctx.restore();
-    }
-  };
+        ctx.save();
+        ctx.translate(radius, radius);
+        ctx.rotate(angle + anglePerSlice / 2);
+        ctx.textAlign = "right";
+        ctx.fillStyle = "#333";
+        ctx.font = "14px sans-serif";
+        ctx.fillText(prompts[i], radius - 10, 5);
+        ctx.restore();
+      }
+    },
+    [anglePerSlice, numSlices]
+  );
 
   useEffect(() => {
     drawWheel(rotation);
-  }, [rotation]);
+  }, [rotation, drawWheel]);
 
   const spin = () => {
     if (isSpinning) return;
@@ -66,8 +69,6 @@ const Spinner: React.FC = () => {
     const animate = (time: number) => {
       const elapsed = time - start;
       const progress = Math.min(elapsed / duration, 1);
-
-      // Ease out
       const easeOut = 1 - Math.pow(1 - progress, 3);
       const angle = rotation + easeOut * (finalAngle - rotation);
 
@@ -88,7 +89,24 @@ const Spinner: React.FC = () => {
 
   return (
     <div className="text-center">
-      <canvas ref={canvasRef} style={{ borderRadius: "50%" }} />
+      <div
+        className="relative inline-block"
+        style={{ width: wheelSize, height: wheelSize }}
+      >
+        {/* Pointer */}
+        <div
+          className="absolute left-1/2 -top-5 transform -translate-x-1/2"
+          style={{
+            width: 0,
+            height: 0,
+            borderLeft: "12px solid transparent",
+            borderRight: "12px solid transparent",
+            borderBottom: "20px solid red",
+          }}
+        />
+        <canvas ref={canvasRef} className="rounded-full" />
+      </div>
+
       <button
         onClick={spin}
         className="mt-4 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
@@ -96,6 +114,7 @@ const Spinner: React.FC = () => {
       >
         {isSpinning ? "Spinning..." : "Spin!"}
       </button>
+
       {selectedPrompt && (
         <div className="mt-6 text-xl font-bold text-gray-800">
           🎤 {selectedPrompt}
