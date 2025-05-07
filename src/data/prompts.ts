@@ -1,4 +1,4 @@
-export const prompts = [
+export const defaultPrompts = [
   "What’s your name?",
   "What do you like?",
   "Say 3 fruits.",

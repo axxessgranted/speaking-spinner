@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from "react";
-import { prompts } from "../data/prompts";
+import { defaultPrompts } from "../data/prompts";
 
 const Spinner: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -7,7 +7,7 @@ const Spinner: React.FC = () => {
   const [isSpinning, setIsSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [customPromptText, setCustomPromptText] = useState("");
-  const [customPrompts, setCustomPrompts] = useState<string[]>(prompts);
+  const [customPrompts, setCustomPrompts] = useState<string[]>(defaultPrompts);
 
   const wheelSize = 300;
   const numSlices = customPrompts.length;
@@ -80,7 +80,7 @@ const Spinner: React.FC = () => {
         ctx.restore();
       }
     },
-    [anglePerSlice, numSlices]
+    [anglePerSlice, numSlices, customPrompts]
   );
 
   useEffect(() => {
@@ -148,6 +148,17 @@ const Spinner: React.FC = () => {
           className="mt-2 px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
         >
           Set Prompts
+        </button>
+        <button
+          onClick={() => {
+            setCustomPromptText("");
+            setCustomPrompts(defaultPrompts);
+            setRotation(0);
+            setSelectedPrompt(null);
+          }}
+          className="mt-2 ml-2 px-3 py-1 bg-gray-500 text-white rounded hover:bg-gray-600"
+        >
+          Reset to Default
         </button>
       </div>
       <div
