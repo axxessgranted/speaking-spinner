@@ -6,9 +6,11 @@ const Spinner: React.FC = () => {
   const [selectedPrompt, setSelectedPrompt] = useState<string | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
+  const [customPromptText, setCustomPromptText] = useState("");
+  const [customPrompts, setCustomPrompts] = useState<string[]>(prompts);
 
   const wheelSize = 300;
-  const numSlices = prompts.length;
+  const numSlices = customPrompts.length;
   const anglePerSlice = (2 * Math.PI) / numSlices;
 
   const drawWheel = useCallback(
@@ -58,7 +60,7 @@ const Spinner: React.FC = () => {
 
         // Word-wrap logic if needed
         const maxWidth = radius * 0.6;
-        const words = prompts[i].split(" ");
+        const words = customPrompts[i].split(" ");
         let line = "";
         let yOffset = 0;
 
@@ -114,7 +116,7 @@ const Spinner: React.FC = () => {
       } else {
         setIsSpinning(false);
         setRotation(finalAngle % (2 * Math.PI));
-        setSelectedPrompt(prompts[randomIndex]);
+        setSelectedPrompt(customPrompts[randomIndex]);
       }
     };
 
@@ -123,6 +125,31 @@ const Spinner: React.FC = () => {
 
   return (
     <div className="text-center">
+      <div className="mb-4">
+        <textarea
+          value={customPromptText}
+          onChange={(e) => setCustomPromptText(e.target.value)}
+          placeholder="Enter prompts, one per line"
+          className="w-full max-w-md p-2 border rounded text-sm"
+          rows={4}
+        />
+        <button
+          onClick={() => {
+            const newPrompts = customPromptText
+              .split("\n")
+              .map((p) => p.trim())
+              .filter((p) => p.length > 0);
+            if (newPrompts.length > 1) {
+              setCustomPrompts(newPrompts);
+              setRotation(0); // reset rotation
+              setSelectedPrompt(null);
+            }
+          }}
+          className="mt-2 px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700"
+        >
+          Set Prompts
+        </button>
+      </div>
       <div
         className="relative inline-block"
         style={{ width: wheelSize, height: wheelSize }}
