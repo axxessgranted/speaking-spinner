@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState, useCallback } from "react";
-import { defaultPrompts } from "../data/prompts";
+import { promptCategories } from "../data/prompts";
 
 const Spinner: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -7,7 +7,10 @@ const Spinner: React.FC = () => {
   const [isSpinning, setIsSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [customPromptText, setCustomPromptText] = useState("");
-  const [customPrompts, setCustomPrompts] = useState<string[]>(defaultPrompts);
+  const [customPrompts, setCustomPrompts] = useState<string[]>(
+    promptCategories["Default"]
+  );
+  const [selectedCategory, setSelectedCategory] = useState<string>("Default");
 
   const wheelSize = 300;
   const numSlices = customPrompts.length;
@@ -125,6 +128,29 @@ const Spinner: React.FC = () => {
 
   return (
     <div className="text-center">
+      <div className="mb-2">
+        <label className="mr-2 font-semibold">Choose a category:</label>
+        <select
+          value={selectedCategory}
+          onChange={(e) => {
+            const category = e.target.value;
+            setSelectedCategory(category);
+            const categoryPrompts =
+              promptCategories[category] || promptCategories["Default"];
+            setCustomPromptText("");
+            setCustomPrompts(categoryPrompts);
+            setRotation(0);
+            setSelectedPrompt(null);
+          }}
+          className="px-2 py-1 rounded border"
+        >
+          {Object.keys(promptCategories).map((cat) => (
+            <option key={cat} value={cat}>
+              {cat}
+            </option>
+          ))}
+        </select>
+      </div>
       <div className="mb-4">
         <textarea
           value={customPromptText}
@@ -152,7 +178,7 @@ const Spinner: React.FC = () => {
         <button
           onClick={() => {
             setCustomPromptText("");
-            setCustomPrompts(defaultPrompts);
+            setCustomPrompts(promptCategories["Default"]);
             setRotation(0);
             setSelectedPrompt(null);
           }}
